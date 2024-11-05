@@ -14,26 +14,9 @@ jobs:
 
     steps:
     - name: Download builder script
-      run: |
-        wget https://raw.githubusercontent.com/EvgeniyPatlan/sorting-library/refs/heads/main/packaging/script/builder.sh -O builder.sh
-    - name: Upload builder script
-      uses: actions/upload-artifact@v4
-      with:
-        name: builder-script
-        path: builder.sh
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-
-    - name: Download builder script
       uses: actions/download-artifact@v4
       with:
         name: builder-script
-    - name: Install build dependencies
-      run: |
-        chmod +x $GITHUB_WORKSPACE/builder.sh
         mkdir -p /tmp/SORTING_LIB
         sudo $GITHUB_WORKSPACE/builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
 
@@ -88,7 +71,7 @@ jobs:
       with:
         name: sorting-library-source-tarball
 
-    - name: Move Source Tarball to source_tarball directory
+    -     - name: Move Source Tarball to source_tarball directory
       run: |
         mkdir -p source_tarball
         mv *.tar.gz source_tarball/
@@ -97,7 +80,6 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: builder-script
-  
     - name: Install build dependencies
       run: |
         chmod +x $GITHUB_WORKSPACE/builder.sh
@@ -164,57 +146,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y docker.io
 
-    - name: Create RPM directory
-      run: mkdir -p rpm
-
-    - name: Download Source RPM
-      uses: actions/download-artifact@v4
-      with:
-        name: sorting-library-source-rpm
-
-    - name: Build RPM in Docker
-      run: |
-        docker run --rm -v $GITHUB_WORKSPACE:/workspace -w /workspace/srpm oraclelinux:8 bash -c "
-          yum install -y rpm-build &&
-          chmod +x /workspace/builder.sh &&
-          /workspace/builder.sh --builddir=/workspace/rpm --build_rpm=1"
-
-    - name: Upload RPM Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: sorting-library-rpm
-        path: "/workspace/rpm/*.rpm"
-    - name: Create RPM directory
-      run: mkdir -p rpm
-
-    - name: Download Source RPM
-      uses: actions/download-artifact@v4
-      with:
-        name: sorting-library-source-rpm
-
-    - name: Move Source RPM to srpm directory
-      run: |
-        mkdir -p srpm
-        mv *.src.rpm srpm/
-
-    - name: Install build dependencies
-      run: |
-        chmod +x $GITHUB_WORKSPACE/builder.sh
-        mkdir -p /tmp/SORTING_LIB
-        sudo $GITHUB_WORKSPACE/builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
-
-    - name: Build RPM
-      run: |
-        mkdir -p /tmp/SORTING_LIB
-        chmod +x $GITHUB_WORKSPACE/builder.sh
-        ./builder.sh --builddir=/tmp/SORTING_LIB --build_rpm=1 && mv /tmp/SORTING_LIB/rpm/*.rpm rpm/
-
-    - name: Upload RPM Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: sorting-library-rpm
-        path: "rpm/*.rpm"
-
+        
   build_deb:
     needs: create_source_deb
     runs-on: ubuntu-24.04
@@ -233,15 +165,9 @@ jobs:
         mkdir -p source_deb
         tar -xzvf source_deb_files.tar.gz -C source_deb
 
-    - name: Download builder script
-      uses: actions/download-artifact@v4
-      with:
-        name: builder-script
     - name: Install build dependencies
       run: |
-        chmod +x $GITHUB_WORKSPACE/builder.sh
-        mkdir -p /tmp/SORTING_LIB
-        sudo $GITHUB_WORKSPACE/builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
+        ./builder.sh --install_deps=1
 
     - name: Build DEB
       run: |
@@ -256,16 +182,14 @@ jobs:
         path: "deb/*.deb"
 
   build_docker:
-    runs-on: ubuntu-latest
-    
+        runs-on: ubuntu-latest
+
     steps:
     - name: Set up Docker
       run: |
         sudo apt-get update
         sudo apt-get install -y docker.io
-    - name: Build Docker Image
-      run: |
-        docker build -t sorting-library .    - name: Checkout repository
+    - name: Checkout repository
       uses: actions/checkout@v4
 
     - name: Download RPM and DEB Artifacts

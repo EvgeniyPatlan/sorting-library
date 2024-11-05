@@ -75,7 +75,7 @@ jobs:
     - name: Build Source RPM in Docker
       run: |
         chmod +x builder.sh
-                docker run --rm -v $GITHUB_WORKSPACE:/workspace -w /workspace/source_tarball oraclelinux:8 bash -c "yum install -y rpm-build containerd &&
+                docker run --rm -v $GITHUB_WORKSPACE:/workspace -w /workspace/source_tarball oraclelinux:8 bash -c "yum install -y rpm-build &&
           chmod +x /workspace/builder.sh &&
           /workspace/builder.sh --builddir=/workspace/srpm --build_src_rpm=1"
 
@@ -262,4 +262,4 @@ jobs:
 
     - name: Scan Docker Image for CVEs
       run: |
-        trivy image --skip-update sorting-library
+        trivy image sorting-library

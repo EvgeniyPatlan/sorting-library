@@ -17,18 +17,18 @@ jobs:
       run: |
         wget https://raw.githubusercontent.com/EvgeniyPatlan/sorting-library/refs/heads/main/packaging/script/builder.sh -O builder.sh
     - name: Upload builder script
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: builder-script
         path: builder.sh
-
+     
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.9'
 
     - name: Download builder script
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: builder-script
     - name: Install build dependencies
@@ -43,7 +43,7 @@ jobs:
         tar -czvf /tmp/SORTING_LIB/sorting-library.tar.gz -C /tmp/SORTING_LIB sorting-library
 
     - name: Upload Source Tarball
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: sorting-library-source-tarball
         path: /tmp/SORTING_LIB/sorting-library.tar.gz
@@ -54,12 +54,12 @@ jobs:
 
     steps:
     - name: Download Source Tarball
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: sorting-library-source-tarball
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.9'
 
@@ -78,7 +78,7 @@ jobs:
         cd sorting-library && dpkg-buildpackage -S
 
     - name: Upload Source Packages
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: sorting-library-source-packages
         path: "*.src.rpm, *.dsc, *.tar.gz, *.changes"
@@ -92,7 +92,7 @@ jobs:
       run: mkdir -p rpm
 
     - name: Download Source Packages
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: sorting-library-source-packages
 
@@ -105,7 +105,7 @@ jobs:
         rpmbuild --rebuild sorting-library-*.src.rpm && mv *.rpm rpm/
 
     - name: Upload RPM Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: sorting-library-rpm
         path: "rpm/*.rpm"
@@ -119,7 +119,7 @@ jobs:
       run: mkdir -p deb
 
     - name: Download Source Packages
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: sorting-library-source-packages
 
@@ -132,7 +132,7 @@ jobs:
         dpkg-buildpackage -b && mv ../*.deb deb/
 
     - name: Upload DEB Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: sorting-library-deb
         path: "deb/*.deb"
@@ -143,14 +143,14 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Download RPM and DEB Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: sorting-library-rpm
     - name: Download DEB Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: sorting-library-deb
 
@@ -163,7 +163,7 @@ jobs:
         docker save sorting-library -o sorting-library.tar
 
     - name: Upload Docker Image
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: sorting-library-docker
         path: sorting-library.tar
@@ -174,7 +174,7 @@ jobs:
 
     steps:
     - name: Download Docker Image
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: sorting-library-docker
 

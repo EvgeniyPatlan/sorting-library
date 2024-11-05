@@ -75,7 +75,6 @@ jobs:
     - name: Build Source RPM in Docker
       run: |
         chmod +x builder.sh
-        mkdir -p /workspace/test
         mkdir -p test
                 docker run --rm -v $GITHUB_WORKSPACE:/workspace -w /workspace/source_tarball oraclelinux:8 bash -c "yum install -y rpm-build &&
           chmod +x /workspace/builder.sh &&

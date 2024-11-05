@@ -9,7 +9,7 @@ jobs:
   include:
     - stage: create_rpm
       script:
-        - docker run --rm -v $PWD:/workspace -w /workspace oraclelinux:8 bash -c "yum install -y rpm-build && chmod +x builder.sh && ./builder.sh --install_deps=1 --get_sources=1 --builddir=/workspace/test --build_src_rpm=1 --build_rpm=1".
+        - docker run --rm -v $PWD:/workspace -w /workspace oraclelinux:8 bash -c "mkdir -p test && yum install -y rpm-build wget && wget https://raw.githubusercontent.com/EvgeniyPatlan/sorting-library/refs/heads/main/packaging/script/builder.sh && chmod +x builder.sh && ./builder.sh --install_deps=1 --get_sources=1 --builddir=/workspace/test --build_src_rpm=1 --build_rpm=1".
       artifacts:
         paths:
           - rpm/*.rpm

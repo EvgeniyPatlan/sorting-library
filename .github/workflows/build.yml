@@ -84,11 +84,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: sorting-library-source-rpm
-        path: "/workspace/srpm/*.src.rpm"
-    - name: Download Source Tarball
-      uses: actions/download-artifact@v4
-      with:
-        name: sorting-library-source-tarball
+        path: "srpm/*.src.rpm"
 
   create_source_deb:
     needs: create_source_tarball
@@ -129,16 +125,48 @@ jobs:
         name: sorting-library-source-deb
         path: source_deb_files.tar.gz
 
-  build_rpm:
-    needs: create_source_rpm
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Set up Docker
-      run: |
-        sudo apt-get update
-        curl -fsSL https://get.docker.com | sh
-
+  create_rpm:
+          needs: create_source_rpm
+          runs-on: ubuntu-latest
+      
+          steps:
+          - name: Set up Docker
+            run: |
+              sudo apt-get update
+              sudo apt-get update
+              sudo apt-get remove -y containerd docker.io
+              sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+              echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+              sudo apt-get update
+              sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+          - name: Download Source RPM
+            uses: actions/download-artifact@v4
+            with:
+              name: sorting-library-source-rpm
+      
+          - name: Move Source RPM to srpm directory
+            run: |
+              mkdir -p srpm
+              mv *.src.rpm srpm/
+      
+          - name: Download builder script
+            run: |
+              wget https://raw.githubusercontent.com/EvgeniyPatlan/sorting-library/refs/heads/main/packaging/script/builder.sh -O builder.sh
+      
+          - name: Build RPM in Docker
+            run: |
+              chmod +x builder.sh
+              mkdir -p test
+                      docker run --rm -v $GITHUB_WORKSPACE:/workspace -w /workspace/ oraclelinux:8 bash -c "yum install -y rpm-build &&
+                chmod +x /workspace/builder.sh &&
+                /workspace/builder.sh --builddir=/workspace/test --build_rpm=1"
+      
+          - name: Upload Source RPM
+            uses: actions/upload-artifact@v4
+            with:
+              name: sorting-library-rpm
+              path: "rpm/*.rpm"
         
   build_deb:
     needs: create_source_deb

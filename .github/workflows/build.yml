@@ -17,8 +17,6 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: builder-script
-        mkdir -p /tmp/SORTING_LIB
-        sudo $GITHUB_WORKSPACE/builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
 
     - name: Create Source Tarball
       run: |
@@ -71,7 +69,7 @@ jobs:
       with:
         name: sorting-library-source-tarball
 
-    -     - name: Move Source Tarball to source_tarball directory
+    - name: Move Source Tarball to source_tarball directory
       run: |
         mkdir -p source_tarball
         mv *.tar.gz source_tarball/
@@ -182,7 +180,7 @@ jobs:
         path: "deb/*.deb"
 
   build_docker:
-        runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: Set up Docker

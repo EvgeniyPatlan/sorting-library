@@ -14,20 +14,6 @@ jobs:
 
     steps:
     - name: Download builder script
-      run: |
-        wget https://raw.githubusercontent.com/EvgeniyPatlan/sorting-library/refs/heads/main/packaging/script/builder.sh -O builder.sh
-    - name: Upload builder script
-      uses: actions/upload-artifact@v4
-      with:
-        name: builder-script
-        path: builder.sh
-     
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-
-    - name: Download builder script
       uses: actions/download-artifact@v4
       with:
         name: builder-script
@@ -35,7 +21,8 @@ jobs:
     - name: Create Source Tarball
       run: |
         mkdir -p /tmp/SORTING_LIB
-        ./builder.sh --builddir=/tmp/SORTING_LIB --get_sources=1
+        chmod +x builder.sh
+                ./builder.sh --builddir=/tmp/SORTING_LIB --get_sources=1
 
     - name: Upload Source Tarball
       uses: actions/upload-artifact@v4
@@ -73,7 +60,8 @@ jobs:
 
     - name: Build Source RPM in Docker
       run: |
-        docker run --rm -v $GITHUB_WORKSPACE:/workspace -w /workspace/source_tarball oraclelinux:8 bash -c "yum install -y rpm-build containerd.io &&
+        chmod +x builder.sh
+                docker run --rm -v $GITHUB_WORKSPACE:/workspace -w /workspace/source_tarball oraclelinux:8 bash -c "yum install -y rpm-build containerd.io &&
           chmod +x /workspace/builder.sh &&
           /workspace/builder.sh --builddir=/workspace/srpm --build_src_rpm=1"
 

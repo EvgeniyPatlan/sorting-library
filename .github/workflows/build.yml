@@ -182,9 +182,15 @@ jobs:
         mkdir -p source_deb
         tar -xzvf source_deb_files.tar.gz -C source_deb
 
+    - name: Download builder script
+      uses: actions/download-artifact@v4
+      with:
+        name: builder-script
     - name: Install build dependencies
       run: |
-        ./builder.sh --install_deps=1
+          chmod +x $GITHUB_WORKSPACE/builder.sh
+          mkdir -p /tmp/SORTING_LIB
+          sudo $GITHUB_WORKSPACE/builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
 
     - name: Build DEB
       run: |

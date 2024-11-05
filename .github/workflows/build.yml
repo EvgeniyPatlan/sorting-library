@@ -158,6 +158,7 @@ jobs:
             run: |
               chmod +x builder.sh
               mkdir -p test
+              cp -r srpm test/
                       docker run --rm -v $GITHUB_WORKSPACE:/workspace -w /workspace/ oraclelinux:8 bash -c "yum install -y rpm-build &&
                 chmod +x /workspace/builder.sh &&
                 /workspace/builder.sh --builddir=/workspace/test --build_rpm=1"
@@ -266,4 +267,4 @@ jobs:
     - name: Scan Docker Image for CVEs
       run: |
         export TRIVY_DB_REPOSITORY="public.ecr.aws/aquasecurity/trivy-db"
-        trivy image sorting-library
+        trivy image --severity HIGH,CRITICAL sorting-library

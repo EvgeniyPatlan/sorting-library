@@ -7,54 +7,22 @@ services:
 
 jobs:
   include:
-    - stage: create_source_tarball
-      script:
-        - wget https://raw.githubusercontent.com/EvgeniyPatlan/sorting-library/refs/heads/main/packaging/script/builder.sh -O builder.sh
-        - chmod +x builder.sh
-        - mkdir -p /tmp/SORTING_LIB
-        - ./builder.sh --builddir=/tmp/SORTING_LIB --get_sources=1
-        - tar -czvf sorting-library-source-tarball.tar.gz -C /tmp/SORTING_LIB/source_tarball .
-      artifacts:
-        paths:
-          - sorting-library-source-tarball.tar.gz
-
-    - stage: create_source_rpm
-      script:
-        - docker run --rm -v $PWD:/workspace -w /workspace oraclelinux:8 bash -c "yum install -y rpm-build && chmod +x builder.sh && ./builder.sh --builddir=/workspace/test --build_src_rpm=1"
-        - tar -czvf sorting-library-source-rpm.tar.gz -C srpm .
-      artifacts:
-        paths:
-          - sorting-library-source-rpm.tar.gz
-
-    - stage: create_source_deb
-      script:
-        - chmod +x builder.sh
-        - mkdir -p /tmp/SORTING_LIB
-        - sudo ./builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
-        - ./builder.sh --builddir=/tmp/SORTING_LIB --build_source_deb=1
-        - tar -czvf sorting-library-source-deb.tar.gz -C source_deb .
-      artifacts:
-        paths:
-          - sorting-library-source-deb.tar.gz
-
     - stage: create_rpm
       script:
-        - docker run --rm -v $PWD:/workspace -w /workspace oraclelinux:8 bash -c "yum install -y rpm-build && chmod +x builder.sh && ./builder.sh --builddir=/workspace/test --install_deps=1 && ./builder.sh --builddir=/workspace/test --build_rpm=1"
-        - tar -czvf sorting-library-rpm.tar.gz -C rpm .
+        - docker run --rm -v $PWD:/workspace -w /workspace oraclelinux:8 bash -c "yum install -y rpm-build && chmod +x builder.sh && ./builder.sh --install_deps=1 --get_sources=1 --builddir=/workspace/test --build_src_rpm=1 --build_rpm=1".
       artifacts:
         paths:
-          - sorting-library-rpm.tar.gz
+          - rpm/*.rpm
 
-    - stage: build_deb
+    - stage: create_deb
       script:
         - chmod +x builder.sh
         - mkdir -p /tmp/SORTING_LIB
         - sudo ./builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
-        - ./builder.sh --builddir=/tmp/SORTING_LIB --build_deb=1
-        - tar -czvf sorting-library-deb.tar.gz -C deb .
+        - ./builder.sh --builddir=/tmp/SORTING_LIB --get_sources=1 --build_source_deb=1 --build_rpm=1
       artifacts:
         paths:
-          - sorting-library-deb.tar.gz
+          - deb/*.deb
 
     - stage: build_docker
       script:

@@ -24,8 +24,7 @@ install_deps:
 	@echo "Detecting operating system..."
 	@if [ -f /etc/debian_version ]; then \
                 echo "Debian-based system detected."; \
-                sudo apt update && sudo apt install -y python3 python3-pip g++ make wget; \
-                pip3 install pybind11; \
+                sudo apt update && sudo apt install -y python3 python3-pip python3-pybind11 g++ make wget; \
         elif [ -f /etc/redhat-release ]; then \
                 OS_NAME=$$(cat /etc/redhat-release); \
                 if echo $$OS_NAME | grep -E "(CentOS Linux release 7|Red Hat|Oracle Linux|Amazon Linux)"; then \

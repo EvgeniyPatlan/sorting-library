@@ -256,8 +256,8 @@ jobs:
         path: "deb/*.deb"
 
   build_docker:
-        runs-on: ubuntu-latest
-
+    runs-on: ubuntu-latest
+    
     steps:
     - name: Set up Docker
       run: |

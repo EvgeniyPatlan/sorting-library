@@ -1,0 +1,191 @@
+name: Build RPM, DEB, and Docker
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  create_source_tarball:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download builder script
+      run: |
+        wget https://raw.githubusercontent.com/EvgeniyPatlan/sorting-library/refs/heads/main/packaging/script/builder.sh -O builder.sh
+    - name: Upload builder script
+      uses: actions/upload-artifact@v2
+      with:
+        name: builder-script
+        path: builder.sh
+    - 
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Download builder script
+      uses: actions/download-artifact@v2
+      with:
+        name: builder-script
+    - name: Install build dependencies
+      run: |
+        chmod +x builder.sh
+        ./builder.sh --install_deps=1
+
+    - name: Create Source Tarball
+      run: |
+        mkdir -p /tmp/SORTING_LIB
+        ./build.sh --builddir=/tmp/SORTING_LIB --get_sources=1
+        tar -czvf /tmp/SORTING_LIB/sorting-library.tar.gz -C /tmp/SORTING_LIB sorting-library
+
+    - name: Upload Source Tarball
+      uses: actions/upload-artifact@v2
+      with:
+        name: sorting-library-source-tarball
+        path: /tmp/SORTING_LIB/sorting-library.tar.gz
+
+  create_source_packages:
+    needs: create_source_tarball
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download Source Tarball
+      uses: actions/download-artifact@v2
+      with:
+        name: sorting-library-source-tarball
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install build dependencies
+      run: |
+        ./build.sh --install_deps=1
+
+    - name: Create Source RPM
+      run: |
+        rpmbuild -ts sorting-library.tar.gz
+
+    - name: Create Source DEB
+      run: |
+        mkdir -p sorting-library
+        tar -xzf sorting-library.tar.gz -C sorting-library --strip-components=1
+        cd sorting-library && dpkg-buildpackage -S
+
+    - name: Upload Source Packages
+      uses: actions/upload-artifact@v2
+      with:
+        name: sorting-library-source-packages
+        path: "*.src.rpm, *.dsc, *.tar.gz, *.changes"
+
+  build_rpm:
+    needs: create_source_packages
+    runs-on: rockylinux-latest
+
+    steps:
+    - name: Create RPM directory
+      run: mkdir -p rpm
+
+    - name: Download Source Packages
+      uses: actions/download-artifact@v2
+      with:
+        name: sorting-library-source-packages
+
+    - name: Install build dependencies
+      run: |
+        sudo dnf install -y rpm-build
+
+    - name: Build RPM
+      run: |
+        rpmbuild --rebuild sorting-library-*.src.rpm && mv *.rpm rpm/
+
+    - name: Upload RPM Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: sorting-library-rpm
+        path: "rpm/*.rpm"
+
+  build_deb:
+    needs: create_source_packages
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Create DEB directory
+      run: mkdir -p deb
+
+    - name: Download Source Packages
+      uses: actions/download-artifact@v2
+      with:
+        name: sorting-library-source-packages
+
+    - name: Install build dependencies
+      run: |
+        ./build.sh --install_deps=1
+
+    - name: Build DEB
+      run: |
+        dpkg-buildpackage -b && mv ../*.deb deb/
+
+    - name: Upload DEB Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: sorting-library-deb
+        path: "deb/*.deb"
+
+  build_docker:
+    needs: [build_rpm, build_deb]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Download RPM and DEB Artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: sorting-library-rpm
+    - name: Download DEB Artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: sorting-library-deb
+
+    - name: Build Docker Image
+      run: |
+        docker build -t sorting-library .
+
+    - name: Save Docker Image as File
+      run: |
+        docker save sorting-library -o sorting-library.tar
+
+    - name: Upload Docker Image
+      uses: actions/upload-artifact@v2
+      with:
+        name: sorting-library-docker
+        path: sorting-library.tar
+
+  scan_docker:
+    needs: build_docker
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download Docker Image
+      uses: actions/download-artifact@v2
+      with:
+        name: sorting-library-docker
+
+    - name: Load Docker Image
+      run: |
+        docker load -i sorting-library.tar
+
+    - name: Install Trivy
+      run: |
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+
+    - name: Scan Docker Image for CVEs
+      run: |
+        ./trivy image sorting-library

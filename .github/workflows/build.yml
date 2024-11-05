@@ -58,6 +58,11 @@ jobs:
       with:
         name: sorting-library-source-tarball
 
+    - name: Move Source Tarball to source_tarball directory
+      run: |
+        mkdir -p source_tarball
+        mv *.tar.gz source_tarball/
+
     - name: Download builder script
       uses: actions/download-artifact@v4
       with:
@@ -88,6 +93,11 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: sorting-library-source-tarball
+
+    - name: Move Source Tarball to source_tarball directory
+      run: |
+        mkdir -p source_tarball
+        mv *.tar.gz source_tarball/
 
     - name: Download builder script
       uses: actions/download-artifact@v4
@@ -123,6 +133,11 @@ jobs:
       with:
         name: sorting-library-source-rpm
 
+    - name: Move Source RPM to srpm directory
+      run: |
+        mkdir -p srpm
+        mv *.src.rpm srpm/
+
     - name: Install build dependencies
       run: |
         chmod +x $GITHUB_WORKSPACE/builder.sh
@@ -153,6 +168,11 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: sorting-library-source-deb
+
+    - name: Move Source DEB to source_deb directory
+      run: |
+        mkdir -p source_deb
+        mv *.dsc *.tar.gz *.changes *.diff.gz source_deb/
 
     - name: Install build dependencies
       run: |

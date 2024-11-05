@@ -37,7 +37,7 @@ jobs:
     - name: Set up Docker
       run: |
         sudo apt-get update
-        sudo apt-get install -y docker.io
+        sudo apt-get install -y docker.io containerd
     - name: Download Source Tarball
       uses: actions/download-artifact@v4
       with:
@@ -54,8 +54,7 @@ jobs:
 
     - name: Build Source RPM in Docker
       run: |
-        docker run --rm -v $GITHUB_WORKSPACE:/workspace -w /workspace/source_tarball oraclelinux:8 bash -c "
-          yum install -y rpm-build &&
+        docker run --rm -v $GITHUB_WORKSPACE:/workspace -w /workspace/source_tarball oraclelinux:8 bash -c "yum install -y rpm-build containerd.io &&
           chmod +x /workspace/builder.sh &&
           /workspace/builder.sh --builddir=/workspace/srpm --build_src_rpm=1"
 

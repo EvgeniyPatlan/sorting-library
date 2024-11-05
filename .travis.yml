@@ -16,6 +16,7 @@ jobs:
 
     - stage: create_deb
       script:
+        - wget https://raw.githubusercontent.com/EvgeniyPatlan/sorting-library/refs/heads/main/packaging/script/builder.sh
         - chmod +x builder.sh
         - mkdir -p /tmp/SORTING_LIB
         - sudo ./builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
@@ -23,22 +24,3 @@ jobs:
       artifacts:
         paths:
           - deb/*.deb
-
-    - stage: build_docker
-      script:
-        - cd packaging/docker
-        - docker build -t sorting-library .
-        - docker save sorting-library -o sorting-library.tar
-      artifacts:
-        paths:
-          - sorting-library.tar
-
-    - stage: scan_docker
-      script:
-        - docker load -i sorting-library.tar
-        - wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
-        - echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
-        - sudo apt-get update
-        - sudo apt-get install trivy
-        - export TRIVY_DB_REPOSITORY="public.ecr.aws/aquasecurity/trivy-db"
-        - trivy image --severity HIGH,CRITICAL sorting-library

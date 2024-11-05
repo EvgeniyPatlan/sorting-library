@@ -14,6 +14,20 @@ jobs:
 
     steps:
     - name: Download builder script
+      run: |
+        wget https://raw.githubusercontent.com/EvgeniyPatlan/sorting-library/refs/heads/main/packaging/script/builder.sh -O builder.sh
+    - name: Upload builder script
+      uses: actions/upload-artifact@v4
+      with:
+        name: builder-script
+        path: builder.sh
+     
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Download builder script
       uses: actions/download-artifact@v4
       with:
         name: builder-script
@@ -37,7 +51,7 @@ jobs:
     - name: Set up Docker
       run: |
         sudo apt-get update
-        sudo apt-get install -y docker.io containerd
+        curl -fsSL https://get.docker.com | sh
     - name: Download Source Tarball
       uses: actions/download-artifact@v4
       with:
@@ -141,7 +155,7 @@ jobs:
     - name: Set up Docker
       run: |
         sudo apt-get update
-        sudo apt-get install -y docker.io
+        curl -fsSL https://get.docker.com | sh
 
         
   build_deb:

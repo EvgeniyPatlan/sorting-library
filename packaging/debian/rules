@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	@echo "Skipping configure step"
+
+override_dh_auto_build:
+	make install_deps
+	make sort_module
+	make merge_sort_test
+
+override_dh_auto_test:
+	make test
+
+override_dh_auto_install:
+	mkdir -p $(DESTDIR)/usr/lib/sorting-library
+	install -m 755 sort_module.so $(DESTDIR)/usr/lib/sorting-library/

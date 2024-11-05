@@ -1,0 +1,13 @@
+Source: sorting-library
+Binary: sorting-library
+Version: 1.0-1
+Section: libs
+Priority: optional
+Maintainer: Your Name <you@example.com>
+
+Package: sorting-library
+Architecture: amd64
+Depends: python3, python3-pip, gcc, make
+Description: Sorting Library with Python bindings
+ This package provides a sorting library implemented in C++ with Python bindings using pybind11. It includes a custom implementation of the Merge Sort algorithm, allowing users to access the sorting functionality through a Python interface or C++ directly.
+

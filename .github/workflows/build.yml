@@ -196,7 +196,7 @@ jobs:
       run: |
         mkdir -p /tmp/SORTING_LIB
         chmod +x $GITHUB_WORKSPACE/builder.sh
-        sudo ./builder.sh --builddir=/tmp/SORTING_LIB --build_deb=1 && mv /tmp/SORTING_LIB/deb/*.deb deb/
+        sudo ./builder.sh --builddir=/tmp/SORTING_LIB --build_deb=1 && sudo mv /tmp/SORTING_LIB/deb/*.deb deb/
 
     - name: Upload DEB Artifacts
       uses: actions/upload-artifact@v4
@@ -253,10 +253,9 @@ jobs:
 
     - name: Install Trivy
       run: |
-        sudo apt install curl;
-        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+        sudo apt install trivy
 
     - name: Scan Docker Image for CVEs
       run: |
         find / | grep trivy
-        ./trivy image sorting-library
+        trivy image sorting-library

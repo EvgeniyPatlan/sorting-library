@@ -21,7 +21,7 @@ jobs:
       with:
         name: builder-script
         path: builder.sh
-     
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -40,18 +40,17 @@ jobs:
     - name: Create Source Tarball
       run: |
         mkdir -p /tmp/SORTING_LIB
-        ./build.sh --builddir=/tmp/SORTING_LIB --get_sources=1
-        tar -czvf /tmp/SORTING_LIB/sorting-library.tar.gz -C /tmp/SORTING_LIB sorting-library
+        ./builder.sh --builddir=/tmp/SORTING_LIB --get_sources=1
 
     - name: Upload Source Tarball
       uses: actions/upload-artifact@v4
       with:
         name: sorting-library-source-tarball
-        path: /tmp/SORTING_LIB/sorting-library.tar.gz
+        path: /tmp/SORTING_LIB/source_tarball/*.tar.gz
 
-  create_source_packages:
+  create_source_rpm:
     needs: create_source_tarball
-    runs-on: ubuntu-latest
+    runs-on: rockylinux-latest
 
     steps:
     - name: Download Source Tarball
@@ -59,51 +58,82 @@ jobs:
       with:
         name: sorting-library-source-tarball
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - name: Download builder script
+      uses: actions/download-artifact@v4
       with:
-        python-version: '3.9'
-
+        name: builder-script
     - name: Install build dependencies
       run: |
-        ./build.sh --install_deps=1
+        chmod +x $GITHUB_WORKSPACE/builder.sh
+        mkdir -p /tmp/SORTING_LIB
+        sudo $GITHUB_WORKSPACE/builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
 
     - name: Create Source RPM
       run: |
-        rpmbuild -ts sorting-library.tar.gz
+        mkdir -p /tmp/SORTING_LIB
+        ./builder.sh --builddir=/tmp/SORTING_LIB --build_src_rpm=1
+
+    - name: Upload Source RPM
+      uses: actions/upload-artifact@v4
+      with:
+        name: sorting-library-source-rpm
+        path: "srpm/*.src.rpm"
+
+  create_source_deb:
+    needs: create_source_tarball
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Download Source Tarball
+      uses: actions/download-artifact@v4
+      with:
+        name: sorting-library-source-tarball
+
+    - name: Download builder script
+      uses: actions/download-artifact@v4
+      with:
+        name: builder-script
+    - name: Install build dependencies
+      run: |
+        chmod +x $GITHUB_WORKSPACE/builder.sh
+        mkdir -p /tmp/SORTING_LIB
+        sudo $GITHUB_WORKSPACE/builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
 
     - name: Create Source DEB
       run: |
-        mkdir -p sorting-library
-        tar -xzf sorting-library.tar.gz -C sorting-library --strip-components=1
-        cd sorting-library && dpkg-buildpackage -S
+        mkdir -p /tmp/SORTING_LIB
+        ./builder.sh --builddir=/tmp/SORTING_LIB --build_source_deb=1
 
-    - name: Upload Source Packages
+    - name: Upload Source DEB
       uses: actions/upload-artifact@v4
       with:
-        name: sorting-library-source-packages
-        path: "*.src.rpm, *.dsc, *.tar.gz, *.changes"
+        name: sorting-library-source-deb
+        path: "source_deb/*.dsc, source_deb/*.tar.gz, source_deb/*.changes, source_deb/*.diff.gz"
 
   build_rpm:
-    needs: create_source_packages
+    needs: create_source_rpm
     runs-on: rockylinux-latest
 
     steps:
     - name: Create RPM directory
       run: mkdir -p rpm
 
-    - name: Download Source Packages
+    - name: Download Source RPM
       uses: actions/download-artifact@v4
       with:
-        name: sorting-library-source-packages
+        name: sorting-library-source-rpm
 
     - name: Install build dependencies
       run: |
-        sudo dnf install -y rpm-build
+        chmod +x $GITHUB_WORKSPACE/builder.sh
+        mkdir -p /tmp/SORTING_LIB
+        sudo $GITHUB_WORKSPACE/builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
 
     - name: Build RPM
       run: |
-        rpmbuild --rebuild sorting-library-*.src.rpm && mv *.rpm rpm/
+        mkdir -p /tmp/SORTING_LIB
+        chmod +x $GITHUB_WORKSPACE/builder.sh
+        ./builder.sh --builddir=/tmp/SORTING_LIB --build_rpm=1 && mv /tmp/SORTING_LIB/rpm/*.rpm rpm/
 
     - name: Upload RPM Artifacts
       uses: actions/upload-artifact@v4
@@ -112,25 +142,27 @@ jobs:
         path: "rpm/*.rpm"
 
   build_deb:
-    needs: create_source_packages
+    needs: create_source_deb
     runs-on: ubuntu-24.04
 
     steps:
     - name: Create DEB directory
       run: mkdir -p deb
 
-    - name: Download Source Packages
+    - name: Download Source DEB
       uses: actions/download-artifact@v4
       with:
-        name: sorting-library-source-packages
+        name: sorting-library-source-deb
 
     - name: Install build dependencies
       run: |
-        ./build.sh --install_deps=1
+        ./builder.sh --install_deps=1
 
     - name: Build DEB
       run: |
-        dpkg-buildpackage -b && mv ../*.deb deb/
+        mkdir -p /tmp/SORTING_LIB
+        chmod +x $GITHUB_WORKSPACE/builder.sh
+        ./builder.sh --builddir=/tmp/SORTING_LIB --build_deb=1 && mv /tmp/SORTING_LIB/deb/*.deb deb/
 
     - name: Upload DEB Artifacts
       uses: actions/upload-artifact@v4

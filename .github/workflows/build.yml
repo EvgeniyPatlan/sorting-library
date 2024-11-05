@@ -161,6 +161,7 @@ jobs:
               cp -r srpm test/
                       docker run --rm -v $GITHUB_WORKSPACE:/workspace -w /workspace/ oraclelinux:8 bash -c "yum install -y rpm-build &&
                 chmod +x /workspace/builder.sh &&
+                /workspace/builder.sh --builddir=/workspace/test --install_deps=1 &&
                 /workspace/builder.sh --builddir=/workspace/test --build_rpm=1"
       
           - name: Upload Source RPM

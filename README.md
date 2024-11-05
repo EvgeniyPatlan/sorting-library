@@ -12,7 +12,16 @@ This project provides a sorting library implemented in C++ with Python bindings 
 - `Makefile`: A Makefile for building the C++ library and running the tests.
 - `include/catch.hpp`: Single header file for the Catch2 testing framework.
 
+## Features
+
+- Efficient sorting algorithms implemented in C++.
+- Python bindings via [pybind11](https://github.com/pybind/pybind11) for seamless integration.
+- Packaging support for Debian and RPM-based distributions.
+- Automated build script for package creation.
+
 ## Prerequisites
+
+Ensure the following dependencies are installed on your system:
 
 - **Python 3**: Required for building Python bindings and running Python tests.
 - **Python Development Headers**: Required for building Python bindings (`Python.h` is included here).
@@ -22,42 +31,78 @@ This project provides a sorting library implemented in C++ with Python bindings 
   ```
 - **GCC or compatible C++ compiler**: Required for compiling the C++ code.
 - **Catch2**: Required for C++ unit tests. The `catch.hpp` file is included in the `include/` directory.
+- **CMake**
+- **Make**
+- **Packaging tools**:
+  - For Debian: `dpkg`, `debhelper`, `devscripts`
+  - For RPM: `rpm-build`
 
-## Building the Project
+## Installation
 
-### Step 1: Install Dependencies
+### Building from Source
 
-To install all required dependencies on a clean machine, run:
+1. Clone the repository:
 
-```sh
-make install_deps
+   ```bash
+   git clone https://github.com/EvgeniyPatlan/sorting-library.git
+   cd sorting-library
+   ```
+
+2. Run the build script to compile and package the library:
+
+   ```bash
+   ./build.sh --builddir=/path/to/build --get_sources=1 --build_src_rpm=1 --build_rpm=1 --build_source_deb=1 --build_deb=1 --install_deps=1
+   ```
+
+   Replace `/path/to/build` with your desired build directory.
+
+3. Install the generated package:
+
+   - For Debian-based systems:
+
+     ```bash
+     sudo dpkg -i /path/to/build/sorting-library_1.0-1_amd64.deb
+     ```
+
+   - For RPM-based systems:
+
+     ```bash
+     sudo rpm -ivh /path/to/build/sorting-library-1.0-1.el8.x86_64.rpm
+     ```
+
+## Usage
+
+After building the shared library, you can use it in Python:
+
+```python
+import sort_module
+
+data = [5, 3, 8, 1, 2]
+sorted_data = sort_module.sort_array(data)
+print(f"Sorted array: {sorted_data}")
 ```
 
-This command will automatically detect the operating system and install the necessary dependencies, including Python 3, Python development headers, GCC, `pybind11`, and other required tools.
+### Usage in Python from Package
 
-### Step 2: Compile the Python Shared Library
+After building the shared library, you can import and use it in Python (on some systems it should be `/usr/lib64`):
 
-To compile the shared library (`sort_module.so`) for Python bindings, run:
+```python
+import sys
+import os
 
-```sh
-make sort_module
+sys.path.append("/usr/lib/sorting-library")
+import sort_module
+
+array = [38, 27, 43, 3, 9, 82, 10]
+sorted_array = sort_module.sort_array(array)
+print(f"Sorted array: {sorted_array}")
 ```
 
-This will generate the shared library that can be imported in Python.
+## Testing
 
-### Step 3: Compile the C++ Test Executable
+The project includes tests for both the C++ and Python components.
 
-To compile the C++ unit tests, run:
-
-```sh
-make merge_sort_test
-```
-
-This will create an executable named `merge_sort_test` that can be used to run the C++ tests.
-
-## Running Tests
-
-### Step 1: Run All Tests
+### Running All Tests
 
 To run both C++ and Python tests, use:
 
@@ -69,17 +114,28 @@ This command will:
 1. Run the C++ tests using `./merge_sort_test`.
 2. Run the Python tests using `python3 test_sort_module.py`.
 
-### Step 2: Run Tests Individually
+### Running C++ Tests Individually
 
-- **C++ Tests**: After building the test executable, you can run the C++ tests directly:
-  ```sh
-  ./merge_sort_test
-  ```
+1. Navigate to the `test` directory:
 
-- **Python Tests**: You can run the Python tests directly using:
-  ```sh
-  python3 test_sort_module.py
-  ```
+   ```bash
+   cd test
+   ```
+
+2. Compile and run the tests:
+
+   ```bash
+   make merge_sort_test
+   ./merge_sort_test
+   ```
+
+### Running Python Tests Individually
+
+Ensure that the Python bindings are correctly installed, then run the Python test scripts located in the `test` directory:
+
+```bash
+python3 test_sort_module.py
+```
 
 ## Cleaning Up
 
@@ -90,36 +146,6 @@ make clean
 ```
 
 This will remove the compiled shared library (`sort_module.so`) and the C++ test executable (`merge_sort_test`).
-
-## Usage in Python
-
-After building the shared library, you can import and use it in Python:
-
-```python
-import sort_module
-
-array = [38, 27, 43, 3, 9, 82, 10]
-sorted_array = sort_module.sort_array(array)
-print(f"Sorted array: {sorted_array}")
-```
-
-## Usage in Python from package
-
-After building the shared library, you can import and use it in Python(on some systems it should be /usr/lib64):
-
-```python
-import sys
-import os
-
-sys.path.append("/usr/lib64/sorting-library")
-import sort_module
-
-array = [38, 27, 43, 3, 9, 82, 10]
-sorted_array = sort_module.sort_array(array)
-print(f"Sorted array: {sorted_array}")
-
-```
-
 
 ## Summary of Commands
 
@@ -136,8 +162,6 @@ print(f"Sorted array: {sorted_array}")
 - **Language**: C++ (with Python bindings using `pybind11`)
 - **Sorting Algorithm**: Merge Sort
 - **Testing Frameworks**: Catch2 for C++ (included as `include/catch.hpp`) and `unittest` for Python
-
-Feel free to modify the code, add more sorting algorithms, or improve the testing coverage as needed!
 
 ## Sorting Algorithm: Merge Sort
 
@@ -159,3 +183,13 @@ While Merge Sort has a higher space complexity (**O(n)**) compared to some in-pl
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for more details.
+
+## Contributing
+
+Contributions are welcome! Please fork the repository and submit a pull request with your changes.
+
+## Acknowledgments
+
+This project utilizes [pybind11](https://github.com/pybind/pybind11) for creating Python bindings for the C++ codebase.
+
+

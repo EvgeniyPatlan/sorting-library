@@ -1,0 +1,76 @@
+language: python
+python:
+  - "3.9"
+
+services:
+  - docker
+
+jobs:
+  include:
+    - stage: create_source_tarball
+      script:
+        - wget https://raw.githubusercontent.com/EvgeniyPatlan/sorting-library/refs/heads/main/packaging/script/builder.sh -O builder.sh
+        - chmod +x builder.sh
+        - mkdir -p /tmp/SORTING_LIB
+        - ./builder.sh --builddir=/tmp/SORTING_LIB --get_sources=1
+        - tar -czvf sorting-library-source-tarball.tar.gz -C /tmp/SORTING_LIB/source_tarball .
+      artifacts:
+        paths:
+          - sorting-library-source-tarball.tar.gz
+
+    - stage: create_source_rpm
+      script:
+        - docker run --rm -v $PWD:/workspace -w /workspace oraclelinux:8 bash -c "yum install -y rpm-build && chmod +x builder.sh && ./builder.sh --builddir=/workspace/test --build_src_rpm=1"
+        - tar -czvf sorting-library-source-rpm.tar.gz -C srpm .
+      artifacts:
+        paths:
+          - sorting-library-source-rpm.tar.gz
+
+    - stage: create_source_deb
+      script:
+        - chmod +x builder.sh
+        - mkdir -p /tmp/SORTING_LIB
+        - sudo ./builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
+        - ./builder.sh --builddir=/tmp/SORTING_LIB --build_source_deb=1
+        - tar -czvf sorting-library-source-deb.tar.gz -C source_deb .
+      artifacts:
+        paths:
+          - sorting-library-source-deb.tar.gz
+
+    - stage: create_rpm
+      script:
+        - docker run --rm -v $PWD:/workspace -w /workspace oraclelinux:8 bash -c "yum install -y rpm-build && chmod +x builder.sh && ./builder.sh --builddir=/workspace/test --install_deps=1 && ./builder.sh --builddir=/workspace/test --build_rpm=1"
+        - tar -czvf sorting-library-rpm.tar.gz -C rpm .
+      artifacts:
+        paths:
+          - sorting-library-rpm.tar.gz
+
+    - stage: build_deb
+      script:
+        - chmod +x builder.sh
+        - mkdir -p /tmp/SORTING_LIB
+        - sudo ./builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
+        - ./builder.sh --builddir=/tmp/SORTING_LIB --build_deb=1
+        - tar -czvf sorting-library-deb.tar.gz -C deb .
+      artifacts:
+        paths:
+          - sorting-library-deb.tar.gz
+
+    - stage: build_docker
+      script:
+        - cd packaging/docker
+        - docker build -t sorting-library .
+        - docker save sorting-library -o sorting-library.tar
+      artifacts:
+        paths:
+          - sorting-library.tar
+
+    - stage: scan_docker
+      script:
+        - docker load -i sorting-library.tar
+        - wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+        - echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+        - sudo apt-get update
+        - sudo apt-get install trivy
+        - export TRIVY_DB_REPOSITORY="public.ecr.aws/aquasecurity/trivy-db"
+        - trivy image --severity HIGH,CRITICAL sorting-library

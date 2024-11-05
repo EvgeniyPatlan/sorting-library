@@ -51,7 +51,12 @@ jobs:
     - name: Set up Docker
       run: |
         sudo apt-get update
-        curl -fsSL https://get.docker.com | sh --allow-change-held-packages --allow-downgrades
+        sudo apt-get remove -y containerd docker.io
+        sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt-get update
+        sudo apt-get install -y docker-ce docker-ce-cli containerd
     - name: Download Source Tarball
       uses: actions/download-artifact@v4
       with:
@@ -69,7 +74,7 @@ jobs:
     - name: Build Source RPM in Docker
       run: |
         chmod +x builder.sh
-                docker run --rm -v $GITHUB_WORKSPACE:/workspace -w /workspace/source_tarball oraclelinux:8 bash -c "yum install -y rpm-build &&
+                docker run --rm -v $GITHUB_WORKSPACE:/workspace -w /workspace/source_tarball oraclelinux:8 bash -c "yum install -y rpm-build containerd &&
           chmod +x /workspace/builder.sh &&
           /workspace/builder.sh --builddir=/workspace/srpm --build_src_rpm=1"
 
@@ -212,9 +217,10 @@ jobs:
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
         echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
         sudo apt-get update
-        sudo apt-get install -y docker-ce docker-ce-cli containerd
+        sudo apt-get install -y docker-ce docker-ce-cli containerd.io
     - name: Checkout repository
       uses: actions/checkout@v4
+
 
     - name: Build Docker Image
       run: |

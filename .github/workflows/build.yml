@@ -50,7 +50,7 @@ jobs:
 
   create_source_rpm:
     needs: create_source_tarball
-    runs-on: rockylinux-latest
+    runs-on: oraclelinux-latest
 
     steps:
     - name: Download Source Tarball
@@ -113,19 +113,19 @@ jobs:
       run: |
         mkdir -p /tmp/SORTING_LIB
         ./builder.sh --builddir=/tmp/SORTING_LIB --build_source_deb=1
-    - name: Compress Source DEB
-      run: |
-        tar -czvf /tmp/SORTING_LIB/source_deb_files.tar.gz /tmp/SORTING_LIB/source_deb
 
+    - name: Compress Source DEB Files
+      run: |
+        tar -czvf source_deb_files.tar.gz -C source_deb .
     - name: Upload Source DEB Files
       uses: actions/upload-artifact@v4
       with:
         name: sorting-library-source-deb
-        path: /tmp/SORTING_LIB/source_deb_files.tar.gz
+        path: source_deb_files.tar.gz
 
   build_rpm:
     needs: create_source_rpm
-    runs-on: rockylinux-latest
+    runs-on: oraclelinux-latest
 
     steps:
     - name: Create RPM directory
@@ -174,9 +174,9 @@ jobs:
 
     - name: Extract Source DEB Files
       run: |
-          mkdir -p source_deb
-          tar -xzvf sorting-library-source-deb/source_deb_files.tar.gz
-  
+        mkdir -p source_deb
+        tar -xzvf source_deb_files.tar.gz -C source_deb
+
     - name: Install build dependencies
       run: |
         mkdir -p /tmp/SORTING_LIB

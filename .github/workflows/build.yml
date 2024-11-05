@@ -35,7 +35,7 @@ jobs:
       run: |
         chmod +x $GITHUB_WORKSPACE/builder.sh
         mkdir -p /tmp/SORTING_LIB
-        $GITHUB_WORKSPACE/builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
+        sudo $GITHUB_WORKSPACE/builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
 
     - name: Create Source Tarball
       run: |

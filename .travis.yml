@@ -13,14 +13,3 @@ jobs:
       artifacts:
         paths:
           - rpm/*.rpm
-
-    - stage: create_deb
-      script:
-        - wget https://raw.githubusercontent.com/EvgeniyPatlan/sorting-library/refs/heads/main/packaging/script/builder.sh
-        - chmod +x builder.sh
-        - mkdir -p /tmp/SORTING_LIB
-        - sudo ./builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
-        - ./builder.sh --builddir=/tmp/SORTING_LIB --get_sources=1 --build_source_deb=1 --build_deb=1
-      artifacts:
-        paths:
-          - deb/*.deb

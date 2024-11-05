@@ -17,3 +17,5 @@ override_dh_auto_test:
 override_dh_auto_install:
 	mkdir -p $(DESTDIR)/usr/lib/sorting-library
 	install -m 755 sort_module.so $(DESTDIR)/usr/lib/sorting-library/
+	mkdir -p $(DESTDIR)/usr/share/doc/sorting-library
+	install -m 644 LICENSE $(DESTDIR)/usr/share/doc/sorting-library/

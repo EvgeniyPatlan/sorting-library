@@ -34,6 +34,7 @@ install -m 755 sort_module.so %{buildroot}%{_libdir}/sorting-library/
 
 %files
 %{_libdir}/sorting-library/sort_module.so
+%license LICENSE
 
 %changelog
 * Tue Nov 05 2024 Yevhen Patlan <evgeniypatlan@gmail.com> - 1.0-1

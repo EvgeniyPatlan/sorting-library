@@ -75,9 +75,11 @@ jobs:
     - name: Build Source RPM in Docker
       run: |
         chmod +x builder.sh
+        mkdir -p /workspace/test
+        mkdir -p test
                 docker run --rm -v $GITHUB_WORKSPACE:/workspace -w /workspace/source_tarball oraclelinux:8 bash -c "yum install -y rpm-build &&
           chmod +x /workspace/builder.sh &&
-          /workspace/builder.sh --builddir=/workspace/srpm --build_src_rpm=1"
+          /workspace/builder.sh --builddir=/workspace/test --build_src_rpm=1"
 
     - name: Upload Source RPM
       uses: actions/upload-artifact@v4
@@ -262,4 +264,5 @@ jobs:
 
     - name: Scan Docker Image for CVEs
       run: |
+        export TRIVY_DB_REPOSITORY="public.ecr.aws/aquasecurity/trivy-db"
         trivy image sorting-library

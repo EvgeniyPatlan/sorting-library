@@ -14,6 +14,19 @@ jobs:
 
     steps:
     - name: Download builder script
+      run: |
+        wget https://raw.githubusercontent.com/EvgeniyPatlan/sorting-library/refs/heads/main/packaging/script/builder.sh -O builder.sh
+    - name: Upload builder script
+      uses: actions/upload-artifact@v4
+      with:
+        name: builder-script
+        path: builder.sh
+     
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    - name: Download builder script
       uses: actions/download-artifact@v4
       with:
         name: builder-script
@@ -202,17 +215,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Download RPM and DEB Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: sorting-library-rpm
-    - name: Download DEB Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: sorting-library-deb
 
     - name: Build Docker Image
       run: |
+        cd packaging/docker
         docker build -t sorting-library .
 
     - name: Save Docker Image as File

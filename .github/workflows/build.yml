@@ -113,12 +113,15 @@ jobs:
       run: |
         mkdir -p /tmp/SORTING_LIB
         ./builder.sh --builddir=/tmp/SORTING_LIB --build_source_deb=1
+    - name: Compress Source DEB
+      run: |
+        tar -czvf /tmp/SORTING_LIB/source_deb_files.tar.gz /tmp/SORTING_LIB/source_deb
 
-    - name: Upload Source DEB
+    - name: Upload Source DEB Files
       uses: actions/upload-artifact@v4
       with:
         name: sorting-library-source-deb
-        path: "source_deb/*.dsc, source_deb/*.tar.gz, source_deb/*.changes, source_deb/*.diff.gz"
+        path: /tmp/SORTING_LIB/source_deb_files.tar.gz
 
   build_rpm:
     needs: create_source_rpm
@@ -169,14 +172,16 @@ jobs:
       with:
         name: sorting-library-source-deb
 
-    - name: Move Source DEB to source_deb directory
+    - name: Extract Source DEB Files
       run: |
-        mkdir -p source_deb
-        mv *.dsc *.tar.gz *.changes *.diff.gz source_deb/
-
+          mkdir -p source_deb
+          tar -xzvf sorting-library-source-deb/source_deb_files.tar.gz
+  
     - name: Install build dependencies
       run: |
-        ./builder.sh --install_deps=1
+        mkdir -p /tmp/SORTING_LIB
+        chmod +x $GITHUB_WORKSPACE/builder.sh
+        ./builder.sh --builddir=/tmp/SORTING_LIB --install_deps=1
 
     - name: Build DEB
       run: |

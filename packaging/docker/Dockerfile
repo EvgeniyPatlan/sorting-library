@@ -19,6 +19,7 @@ FROM python:3.9-slim
 COPY --from=builder /app/sort_module.so /usr/lib/sorting-library/
 RUN apt-get update && \
     apt-get install -y --no-install-recommends python3 && \
+    apt-get upgrade && \
     rm -rf /var/lib/apt/lists/*
 ENV PYTHONPATH=/usr/lib/sorting-library
 COPY sort_array.py /app/sort_array.py
